@@ -4,15 +4,15 @@ An RTS game engine built over SimpleGame.js (by Andrew Harris). It is being writ
 
 ---
 
-**Main Features**
- - Pathfinding ** in progress 90% complete
+##Main Features
+ - **Pathfinding** . . . *in progress 90% complete*
    - Concurrent A*
    - Dijkstra
    - BFS
- - Tilemap
+ - **Tilemap**
    - Scrollable
    - Customizable
- - Units ** in progress - 70% complete
- - Projectiles ** in progress - 1% complete
- - Menu
+ - **Units** . . . *in progress 70% complete*
+ - **Projectiles** . . . *in progress 1% complete*
+ - **Menu**
  
