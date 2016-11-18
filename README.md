@@ -1,0 +1,3 @@
+# Nickel.js
+
+An RTS game engine built over SimpleGame.js (by Andrew Harris). It is being writtin in Javascript and HTML5 using the canvas element. Developement is currently a work in progress...
