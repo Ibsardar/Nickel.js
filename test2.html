@@ -1,0 +1,404 @@
+<!--
+    test2.html
+    testing...
+--->
+
+<!DOCTYPE HTML>
+
+<html lang="en-US">
+
+<head>
+   
+    <meta charset="UTF-8">
+    
+    <title>Testing Grounds *2*</title>
+    
+    <script type="text/javascript"
+            src = "simpleGame.js">
+    </script>
+    
+    <script type="text/javascript"
+            src = "Nickel.js">
+    </script>
+    
+    <!-- removes favicon.ico error -->
+    <link rel="shortcut icon" href="">
+    
+    <!--   MAIN LOGIC   -->
+    <script type="text/javascript">
+        
+        /*
+        var scene;
+        var ball;
+        var paddlePlayer;
+        var paddleComp;
+        var joy = new Joy();
+
+        function Ball(){
+            //class definition for ball
+            tBall = new Sprite(scene, "test_ball.png", 20, 20);
+
+            tBall.checkBounce = function(paddle){
+                //responds to a collision with the given paddle
+                //Max and min dy 
+                MAX = 10
+                if (this.collidesWith(paddle)){
+                    this.setDX(this.dx * -1);            
+
+                    dy = this.y - paddle.y;
+                    dy = ((dy / paddle.height) * 2);
+                    console.log("dy: " + dy);
+                    dy *= MAX;
+                    this.setDY(dy);
+                } // end if
+            } // end checkBounce
+
+            tBall.checkBounds = function(){
+                //overwrite checkbounds function to give
+                //custom behavior
+
+                //bounce off of top and bottom
+                if (this.y < 0){
+                    this.setDY(this.dy * -1);
+                }
+                if (this.y > scene.height){
+                    this.setDY(this.dy * -1);
+                }
+
+                //wrap off of sides
+                if(this.x < 0){
+                    this.setPosition(scene.width, this.y);
+                    //computer scores
+                } // end if
+                if (this.x > scene.width){
+                    this.setPosition(0, this.y);
+                    //player scores
+                } // end if
+            } // end checkBounds
+
+            return tBall;
+        } // end Ball def
+
+        function Paddle(){
+            //class definition for paddle
+            V_SPEED = 1;
+            BRAINS = .2 //percentage likelihood paddle will move each turn
+            tPaddle = new Sprite(scene, "test_paddle.png", 10, 50);
+
+            tPaddle.followMouse = function(){
+                //follows mouse for player control
+                this.setImgAngle(90);
+                this.y = scene.getMouseY();
+            } // end followMouse method
+
+            tPaddle.autoMove = function(){
+                //automatically moves
+                this.setImgAngle(90);
+
+                //don't move on every turn
+                if (Math.random() < BRAINS){
+                    //ignore small differences
+                    deltaDiff = Math.abs(this.y = ball.y);
+                        if (this.y > ball.y){
+                          this.setMoveAngle(0);
+                        } else {
+                            this.setMoveAngle(180);
+                        } // end if
+                    this.setSpeed(V_SPEED);
+                } // end if
+            } // end autoMove
+
+
+            return tPaddle;
+        }*/
+        
+        
+        //  CONSTANTS
+        // Unit Data [pic,w,h]
+        SHOOTER1_DATA = ["as_pics/ArmyMinion01.png", 30, 42];
+        SHOOTER2_DATA = ["as_pics/ArmyMinion02.png", 30, 42];
+        SHOOTER3_DATA = ["as_pics/ArmyMinion03.png", 30, 42];
+        SHOOTER_FACTORY_DATA = ["factory01.png", 100, 100];
+        CIRCLE_50x50_DATA = ["as_pics/circle01_50x50.png", 50, 50];
+        
+        
+          ////////////////////////////////////////////
+         ///  CREATOR  //////////////////////////////
+        ////////////////////////////////////////////
+        // 
+        // Desc      :   used by Grid. Creates something if clicked
+        //               is a structure so it blocks its occupied tiles
+        //
+        // - - - - - - - - - - - - - - - - - - - - - - 
+        //
+        // Properites:
+        //   item    :   a clickable Menu object
+        //   team    :   determines which team all creations will be on
+        //   tiles   :   list of coordinates representing occupied tiles
+        //               MUST be in order! (NW to SE, left to right)
+        //               MUST have at least 1 tile!
+        //
+        //////////////////////////////////////////////
+        function Creator( scene,data,occupied_tiles,t=0 ) {
+            
+            //vars
+            item = new Menu( scene,data[0],data[1],data[2],true );
+            team = t;
+            
+            item.update_master = function(){
+                item.update();
+                item.events();
+            }
+            
+            //convert coordinate pairs to tiles
+            item.convert_to_tiles = function( pairs ) {
+                list = [];
+                for (i in pairs){
+                    tile = item.scene.get_tile(pairs[i]);
+                    list.push( tile );
+                }
+                
+                return list;
+            }
+            
+            //init tiles
+            tiles = item.convert_to_tiles(occupied_tiles);
+            console.log(tiles);
+            
+            //block the tiles that self is using
+            item.set_tiles = function( tiles ) {
+                for(i in tiles){
+                    tiles[i].block();
+                    tiles[i].set_team(team);
+                }
+            }
+            
+            //place self on the center of multiple tiles and block them
+            //tiles MUST be in order! (NW to SE, left to right)
+            //MUST have at least 1 tile!
+            item.place_on_tiles = function ( tiles ) {
+                
+                //init
+                var cx = 0;
+                var cy = 0;
+                item.set_tiles(tiles);
+                
+                //multiple tiles
+                if (tiles.length > 1){
+                    cx = (tiles[tiles.length-1].x - tiles[0].x)/2 + tiles[0].x;
+                    cy = (tiles[tiles.length-1].y - tiles[0].y)/2 + tiles[0].y;
+                    console.log("NEW CREATOR @ " + cx + ", " + cy);
+                    
+                //one tile
+                }else if(tiles.length == 1){
+                    cx = tiles[0].x;
+                    cy = tiles[0].y;
+                }
+                //no tiles -> center at top-left corner
+                
+                //place creator
+                item.setPosition( cx,cy );
+            }
+            
+            //create a unit nearby
+            item.create = function ( code, tile ) {
+                
+                if (code == "shooter") {
+                    // create shooter unit
+                    shooter = new Unit( scene, SHOOTER1_DATA, CIRCLE_50x50_DATA, tile );
+                    scene.add_element( shooter );
+                    console.log("NEW UNIT @ " + tile.x + ", " + tile.y);
+                    console.log("AND @ MAP LOC: " + tile.get_xpos() + ", " + tile.get_ypos() );
+                }
+                
+            }//end create
+            
+            //overwrite events from Menu
+            item.events = function() {
+                
+                //if clicked
+                if (item.scene.mouse_up( item )==1) {
+                    
+                    console.log("factory clicked! : selection");
+                    
+                    //start from 1st tile within creator object
+                    tile = tiles[0];
+                    
+                    //to make it easier to understand
+                    include_diagonals = true;
+                    include_blocked = false;
+                    include_occupied = false;
+                    
+                    //select nearest tile
+                    nearest = scene.get_nearest_tile( tile,
+                                                      include_diagonals,
+                                                      include_blocked,
+                                                      include_occupied );
+                
+                    // now create at selected tile
+                    item.create( "shooter",nearest );
+                    
+                }
+                
+            }
+            
+            item.place_on_tiles( tiles );
+            
+            //return
+            return item;
+            
+        }//end Creator
+
+        function init(){
+            
+            /*
+            // ecah tile is 250x250
+            game = new Grid( "black",
+                             "test2_map.png",
+                             [ [ 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1 ], 
+                               [ 0, 1, 1, 2, 5, 3, 0, 1, 0, 0, 0, 1 ],
+                               [ 1, 1, 1, 1, 4, 3, 0, 1, 0, 0, 0, 1 ],
+                               [ 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, 1 ],
+                               [ 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1 ],
+                               [ 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1 ], 
+                               [ 0, 1, 1, 2, 5, 3, 0, 1, 0, 0, 0, 1 ],
+                               [ 1, 1, 1, 1, 4, 3, 0, 1, 0, 0, 0, 1 ],
+                               [ 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, 1 ],
+                               [ 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1 ] ],
+                             { 0 : "nothing.png",
+                               1 : "tile_pool.png",
+                               2 : "tile_tree.png",
+                               3 : "tile_grass.png",
+                               4 : "tile_rune.png",
+                               5 : "tile_sun.png" },
+                             0, 0,
+                             250, 250,
+                             10, 10,
+                             1300, 650,
+                             [ 3000, 3000 ]
+                           );
+            */
+            
+            //map is 30x30 tiles
+            my_map = [];
+            for (x=0;x<30;x++){
+                sub_map = [];
+                my_map.push( sub_map );
+                for (y=0;y<30;y++){
+                    sub_map.push( Math.ceil( Math.random() * 4.99 ) );
+                }
+            }
+            console.log(my_map);
+            console.log(my_map[0]);
+            console.log(my_map[0][0]);
+            //each tile is 50x50
+            game = new Grid( "black",
+                             "test2_map.png",
+                             my_map,
+                             { 0 : "nothing.png",
+                               1 : "tile_pool.png",
+                               2 : "tile_tree.png",
+                               3 : "tile_grass.png",
+                               4 : "tile_rune.png",
+                               5 : "tile_sun.png" },
+                             0, 0,
+                             50, 50,
+                             30, 30,
+                             1300, 650,
+                             [ 1500, 1500 ]
+                           );
+            /*
+            //map is 8x4 tiles
+            // this is a solid 2D list initializer
+            my_map = [];
+            for (x=0;x<8;x++){
+                sub_map = [];
+                my_map.push( sub_map );
+                for (y=0;y<4;y++){
+                    sub_map.push( Math.floor( Math.random() * 5.99 ) );
+                }
+            }
+            //each tile is 50x50
+            game = new Grid( "black",
+                             "test2_map.png",
+                             my_map,
+                             { 0 : "nothing.png",
+                               1 : "tile_pool.png",
+                               2 : "tile_tree.png",
+                               3 : "tile_grass.png",
+                               4 : "tile_rune.png",
+                               5 : "tile_sun.png" },
+                             0, 0,          // canvas topleft position x,y
+                             50, 50,        // tile size w,h
+                             8, 4,          // tiles on map AxB
+                             1300, 650,     // canvas size
+                             [ 1920, 1080 ] // bg size w,h
+                           );
+            */
+            
+            // T=E=A=M >
+            // == 1 == > Player
+            
+            // T=E=A=M >
+            // == 2 == > Enemy
+            
+            //FACTORY
+            fac_tiles = [ [1,1], [1,2], [1,3],
+                          [2,1], [2,2], [2,3] ];
+            // should be here: where [F] is 100x100px
+            //                       tiles are 50x50px
+            // * * * * * * * *
+            // * F F * * * * *
+            // * [F] * * * * *
+            // * F F * * * * *
+            factory = new Creator( game,
+                                   SHOOTER_FACTORY_DATA,
+                                   fac_tiles,
+                                   1 );
+            game.add_element( factory );
+            
+            
+            // *****************************  FIX!
+            //UI
+            //menu background
+            ui_bg = new Menu( game, "ui_bg.png", 1300, 100, false );
+            ui_bg.set_topleft( 0,550 );
+            
+            //profile picture of selected unit
+            ui_profile = new Menu( game, "as_pics/ArmyMinion01.png", 30, 42, false );
+            ui_profile.set_topleft( 70,580 );
+            //menu button 1
+            ui_button1 = new Menu( game, "ui_button.png", 120, 82, true );
+            ui_button1.set_topleft( 250,558 );
+            
+            //check ui
+            ui_bg.print();
+            ui_profile.print();
+            ui_button1.print();
+            
+            game.start();
+            
+            //debug
+            game.print();
+            
+        } // end init
+
+        function update(){
+            
+            game.clear();
+            game.interract();
+            game.update();
+            ui_bg.update_master();
+            ui_profile.update_master();
+            ui_button1.update_master();
+            
+        } // end update
+        
+    </script>
+    
+</head>
+
+<body onload = "init()">
+</body>
+
+</html>
