@@ -30,6 +30,10 @@ Include [simpleGame.js](http://aharrisbooks.net/h5g/simpleGame_1_0.js) in the sa
 ##Comes With A Game!
  
 "test.html" is my testing document which ultimately turned out to be game!
+
+Here's a screenshot:
+
+![A Screenshot!](screenshot.png?raw=true "test2.html in action!")
  
 ---
 
