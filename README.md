@@ -25,4 +25,9 @@ An RTS game engine built over SimpleGame.js (by Andrew Harris). It is being writ
  
 "test.html" is my testing document which ultimately turned out to be game!
  
+---
+
+##Art
+
+All by me using MS Paint and Photoshop.
  
