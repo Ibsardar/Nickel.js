@@ -9,12 +9,13 @@ An RTS game engine built over SimpleGame.js (by Andrew Harris). It is being writ
    - Concurrent A*
    - Dijkstra
    - BFS
-   - Grouped Deployment/Recruitment AI
  - **Tilemap** . . . *needs improvement*
    - Scrollable
    - Customizable
    - Voronoi Generation *(in "test2.html")*
  - **Units**
+   - Grouped Deployment/Recruitment AI
+   - Attack Radius AI
  - **Projectiles**
  - **Menu**
  
