@@ -35,6 +35,8 @@ Here's a screenshot:
 
 ![A Screenshot!](screenshot.png?raw=true "test2.html in action!")
  
+[Play The Game!](http://cs.iupui.edu/~ibsardar/lowLvlGame/HTML5,%20Js%20RTS%20Game/test2.html)
+
 ---
 
 ##Art
