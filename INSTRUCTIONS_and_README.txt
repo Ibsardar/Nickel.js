@@ -10,9 +10,14 @@ To run the game:
  - unpack all contents into some directory
  - run "test2.html" on Chrome for best compatability
 
+ - ~~~ OR ~~~
+ 
+ - just got to the website:   http://cs.iupui.edu/~ibsardar/lowLvlGame/HTML/test2.html
+
 ---
 
 KNOW THESE IF YOU WANT TO WIN THE GAME:
+ - ZOOM OUT if your screen is too small
  - left click to select unit
  - ctrl + left click to selct multiple units
  - right click to move units to a tile
