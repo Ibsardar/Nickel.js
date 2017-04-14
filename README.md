@@ -39,7 +39,7 @@ Here's a screenshot:
 
 ---
 
-##Art
+## Art
 
-All by me using MS Paint and Photoshop.
+All by me using MS Paint and Photoshop. If you look carefully, you will realize much of the art in the game is careless though. The focus was more on the functionality.
  
