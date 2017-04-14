@@ -4,13 +4,13 @@ An RTS game engine built over SimpleGame.js (by Andrew Harris). It is being writ
 
 ---
 
-##Requirements
+## Requirements
 
 Include [simpleGame.js](http://aharrisbooks.net/h5g/simpleGame_1_0.js) in the same folder where "Nickel.js" is.
 
 ---
 
-##Main Features
+## Main Features
  - **Pathfinding** . . . *needs improvements*
    - Concurrent A*
    - Dijkstra
@@ -27,9 +27,9 @@ Include [simpleGame.js](http://aharrisbooks.net/h5g/simpleGame_1_0.js) in the sa
  
 ---
 
-##Comes With A Game!
+## Comes With A Game!
  
-"test.html" is my testing document which ultimately turned out to be game!
+"test2.html" is my testing document which ultimately turned out to be game!
 
 Here's a screenshot:
 
