@@ -4,6 +4,12 @@ An RTS game engine built over SimpleGame.js (by Andrew Harris). It is being writ
 
 ---
 
+## Recent Updates/Issues
+
+Recently discovered a hovering/clicking bug on touchscreen laptops.
+
+---
+
 ## Requirements
 
 Include [simpleGame.js](http://aharrisbooks.net/h5g/simpleGame_1_0.js) in the same folder where "Nickel.js" is.
