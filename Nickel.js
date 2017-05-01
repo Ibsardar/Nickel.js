@@ -1,9 +1,9 @@
-/* 
+/*
     NAME:   "Nickel.js"
     AUTH:   Ibrahim Sardar
     DESC:   simpleGame.js wrapper
     NOTE:   include this AFTER simpleGame.js in your HTML file
-    
+
     ATTN:   Does not use prototypes since simpleGame.js doesn't use them.
 */
 
@@ -24,7 +24,7 @@ function inherit_proto( child, parent ) {
 /*
     ************************************************************
     Nickel.js essential objects:
-    
+
     Note - inheritance is PSEUDO from now on...
     ************************************************************
 */
@@ -33,10 +33,11 @@ function inherit_proto( child, parent ) {
  ///   NICKEL   /////////////////////////////
 ////////////////////////////////////////////
 var Nickel = {
-    
+
     /* Static
      *  - states ( 6 different )
      *  - a transparent, 8x8 image
+     *  - a debugging option
      */
     DNE       : 0,
     STOPPED   : 1,
@@ -45,21 +46,22 @@ var Nickel = {
     RECRUITED : 4,
     DEPLOYED  : 5,
     NOTHING   : "nothing.png",
-    
+    DEBUG     : false,
+
     /* Dynamic
      *  - player's score
      *  - global id counter
      */
     SCORE     : 0,
     ID        : 1000000
-    
+
 }
 
   ////////////////////////////////////////////
  ///   TILE   ///////////////////////////////
 ////////////////////////////////////////////
 function Tile( scene,pic,wt,ht,x,y,xm,ym,info ) {
-    
+
     //vars (private)
     var xm   = xm;
     var ym   = ym;
@@ -81,80 +83,84 @@ function Tile( scene,pic,wt,ht,x,y,xm,ym,info ) {
     mySprite = new Sprite( scene, pic, wt, ht );
     mySprite.setBoundAction( CONTINUE );
     mySprite.setSpeed( 0 );
-    
+
     //increment and set ID
     mySprite.id = ++Nickel.ID;
-    
+
     // (public)
     mySprite.index = -1;  //index (for efficiency)
-    
+
     //set costs
     mySprite.set_costs = function ( g_cost, h_cost ) {
         g = g_cost;
         h = h_cost;
         f = g + h;
     }
-    
+
     //get g cost
-    mySprite.get_g = function () { 
+    mySprite.get_g = function () {
         return g;
     }
-    
+
     //get h cost
     mySprite.get_h = function () {
         return h;
     }
-    
+
     //get f cost
     mySprite.get_f = function () {
         return f;
     }
-    
+
     //return topleft position
     mySprite.get_topleft = function () {
         var l = mySprite.x - mySprite.width/2;
         var t = mySprite.y - mySprite.height/2;
         return [l,t];
     }
-    
+
     //set topleft position
     mySprite.set_topleft = function( l, t ) {
         var cx = l + mySprite.width/2;
         var cy = t + mySprite.height/2;
         mySprite.setPosition( cx,cy );
     }
-    
+
     //init pos
     mySprite.set_topleft( x,y );
-    
+
     //init visibility
     if (pic == "nothing.png"){
         mySprite.hide();
     }
-    
+
     //return position on map
     mySprite.pos = function() {
         return [xm,ym];
     }
-    
+
     //set tile as blocked, unoccupied
     mySprite.block = function() {
         blocked = true;
         occupied = false;
         //debug
-        file = this.image.src;
-        this.setImage("debug_blo.png");
+        if (Nickel.DEBUG) {
+            file = this.image.src;
+            this.setImage("debug_blo.png");
+        }
     }
-    
+
     //set a tile as occupied, unblocked
     mySprite.occupy = function() {
         blocked = false;
         occupied = true;
         //debug
-        file = this.image.src;
-        this.setImage("debug_occ.png");
+        if (Nickel.DEBUG) {
+            file = this.image.src;
+            this.setImage("debug_occ.png");
+        }
     }
-    
+
     //set a tile as unoccupied, unblocked, teamless
     mySprite.free = function() {
         blocked = false;
@@ -163,35 +169,35 @@ function Tile( scene,pic,wt,ht,x,y,xm,ym,info ) {
         //debug
         this.setImage(file);
     }
-    
+
     //set a tile as visited
     mySprite.visit = function() {
         visited = true;
     }
-    
+
     //set a tile as not visited
     mySprite.unvisit = function() {
         visited = false;
     }
-    
+
     //set parent
     mySprite.set_parent = function( tile ) {
         parent = tile;
     }
-    
+
     //resets all tracking and cost variables
     mySprite.clear_all = function() {
         this.clear_trackers();
         this.clear_costs();
     }
-    
+
     //resets all cost variables
     mySprite.clear_costs = function() {
         g = 9999999;
         h = 0;
         f = 0;
     }
-    
+
     //resets all tracking variables
     mySprite.clear_trackers = function() {
         visited  = false;
@@ -200,52 +206,54 @@ function Tile( scene,pic,wt,ht,x,y,xm,ym,info ) {
         parent   = null;
         occ_team = "";
         //debug
-        this.setImage(file);
+        if (Nickel.DEBUG) {
+            this.setImage(file);
+        }
     }
-    
+
     //returns current x pos on map
     mySprite.get_xpos = function() {
         return xm;
     }
-    
+
     //returns current y pos on map
     mySprite.get_ypos = function() {
         return ym;
     }
-    
+
     //returns parent
     mySprite.get_parent = function() {
         return parent;
     }
-    
+
     //returns true if blocked
     mySprite.is_blocked = function() {
         return blocked;
     }
-    
+
     //returns true if occupied
     mySprite.is_occupied = function() {
         return occupied;
     }
-    
+
     //returns true if visited
     mySprite.is_visited = function() {
         return visited;
     }
-    
+
     //sets occupier's/blocker's team value to this tile
     mySprite.set_team = function(t) {
         occ_team = t;
     }
-    
+
     //returns team value of occupier/blocker of this tile
     mySprite.get_team = function() {
         return occ_team;
     }
-    
+
     //return
     return mySprite;
-    
+
 }
 
   ////////////////////////////////////////////
@@ -254,12 +262,12 @@ function Tile( scene,pic,wt,ht,x,y,xm,ym,info ) {
 function Grid( bg_color, bg_image, map_matrix, tile_dict,
                can_x, can_y, tile_w, tile_h, tiles_w, tiles_h,
                cam_w, cam_h, bg_dim ) {
-    
-    
+
+
     // Behaves like inheritance, but we are actually
     // just adding functionality on to the scene object
     myScene = new Scene();
-    
+
     //increment and set ID
     myScene.id = ++Nickel.ID;
     //init vars
@@ -277,15 +285,15 @@ function Grid( bg_color, bg_image, map_matrix, tile_dict,
     var groups = [];
     var resources = [0,0];
     myScene.selected_units = [];
-    
+
     //vars
     var scroll_speed = 16; //for map scrolling
     var gap = 25; //for boundaries
     var bounds = []; //map scrolling bounds
-    
+
     //event handling stuff
     var mouse_upped = 0;
-    
+
     //was mouse pressed down and let go?
     //left=1, middle=2, right=3
     myScene.mouse_up = function( sprite ) {
@@ -301,20 +309,14 @@ function Grid( bg_color, bg_image, map_matrix, tile_dict,
             if (mx < sRight){
                 if (my > sTop){
                     if (my < sBottom){
-                        if (myScene.touchable){
-                            //if touchable, left-click
-                            hit = 1;
-                        } else {
-                            // hit = which mouse button clicked
-                            hit = mouse_upped;
-                        }
+                        hit = mouse_upped;
                     }
                 }
             }
         }
         return hit;
     }
-    
+
     //creates the map
     myScene.create_map = function ( matrix ) {
         for(x=0;x<tiles_w;x++){
@@ -335,7 +337,7 @@ function Grid( bg_color, bg_image, map_matrix, tile_dict,
             }
         }
     }
-    
+
     //init funcs
     myScene.setSizePos( cam_w, cam_h, can_x, can_y );
     myScene.setBG( bg_color );
@@ -344,22 +346,22 @@ function Grid( bg_color, bg_image, map_matrix, tile_dict,
     bg_img = new Sprite( myScene, bg_image, bg_dim[0], bg_dim[1] );
     bg_img.setBoundAction( CONTINUE );
     bg_img.setSpeed( 0 );
-    
+
     //add resources for a team
     myScene.add_resources = function( res, t ) {
         resources[t-1] += res;
     }
-    
+
     //get resources from a team
     myScene.get_resources = function( t ) {
         return resources[t-1];
     }
-    
+
     //add an element to be managed by grid
     myScene.add_element = function( obj ) {
         elements.push(obj);
     }
-    
+
     //add a unit to be managed by grid
     myScene.add_unit = function( obj ) {
         units.push(obj);
@@ -369,12 +371,12 @@ function Grid( bg_color, bg_image, map_matrix, tile_dict,
     myScene.add_projectile = function( obj ) {
         projectiles.push(obj);
     }
-    
+
     //add a group to be managed by grid
     myScene.add_group = function( obj ) {
         groups.push(obj);
     }
-    
+
     //remove element by id
     myScene.remove_element = function( obj ) {
         for (var i in elements) {
@@ -383,7 +385,7 @@ function Grid( bg_color, bg_image, map_matrix, tile_dict,
             }
         }
     }
-    
+
     //remove unit by id
     myScene.remove_unit = function( obj ) {
         for (var i in units) {
@@ -392,7 +394,7 @@ function Grid( bg_color, bg_image, map_matrix, tile_dict,
             }
         }
     }
-    
+
     //remove projectile by id
     myScene.remove_projectile = function( obj ) {
         for (var i in projectiles) {
@@ -401,7 +403,7 @@ function Grid( bg_color, bg_image, map_matrix, tile_dict,
             }
         }
     }
-    
+
     //remove group by id
     myScene.remove_group = function( obj ) {
         for (var i in groups) {
@@ -410,27 +412,27 @@ function Grid( bg_color, bg_image, map_matrix, tile_dict,
             }
         }
     }
-    
+
     //returns list of elements
     myScene.get_elements = function() {
         return elements;
     }
-    
+
     //returns list of units
     myScene.get_units = function() {
         return units;
     }
-    
+
     //returns list of projectiles
     myScene.get_projectiles = function() {
         return projectiles;
     }
-    
+
     //returns list of groups
     myScene.get_groups = function() {
         return groups;
     }
-    
+
     //update tiles, BG image
     myScene.update_map = function() {
         //background
@@ -442,7 +444,7 @@ function Grid( bg_color, bg_image, map_matrix, tile_dict,
             }
         }
     }
-    
+
     //update all elements (ELEMENT MUST HAVE: 'update_master' function)
     myScene.update_elements = function() {
         //elements
@@ -450,7 +452,7 @@ function Grid( bg_color, bg_image, map_matrix, tile_dict,
             elements[i].update_master();
         }
     }
-    
+
     //update all units
     myScene.update_units = function() {
         //units
@@ -458,7 +460,7 @@ function Grid( bg_color, bg_image, map_matrix, tile_dict,
             units[i].update_master();
         }
     }
-    
+
     //update all projectiles
     myScene.update_projectiles = function() {
         //projectiles
@@ -466,7 +468,7 @@ function Grid( bg_color, bg_image, map_matrix, tile_dict,
             projectiles[i].update_master();
         }
     }
-    
+
     //update all groups
     myScene.update_groups = function() {
         //groups
@@ -474,7 +476,7 @@ function Grid( bg_color, bg_image, map_matrix, tile_dict,
             groups[i].update_master();
         }
     }
-    
+
     //event handler
     myScene.update_events = function() {
         //if mouse was pressed and let go
@@ -494,7 +496,7 @@ function Grid( bg_color, bg_image, map_matrix, tile_dict,
             }
             else if(mouse_upped==3){
                  console.log("right mouse up!");
-                
+
                 var sprite = myScene.get_tile_at( mx,my );
                 var selects = myScene.selected_units;
                 for (u in selects) {
@@ -504,7 +506,7 @@ function Grid( bg_color, bg_image, map_matrix, tile_dict,
                         selects[u].find_path( selects[u].a_star );
                     }
                 }
-                
+
             }
             else{
                 console.log("<unkown> mouse up!");
@@ -515,12 +517,12 @@ function Grid( bg_color, bg_image, map_matrix, tile_dict,
             return false;
         }
     }
-    
+
     //resets variables as needed to properly enter the next frame
     myScene.prepare = function(){
         mouse_upped = 0;
     }
-    
+
     //update
     myScene.update = function () {
         myScene.update_events();
@@ -530,17 +532,17 @@ function Grid( bg_color, bg_image, map_matrix, tile_dict,
         myScene.update_elements();
         myScene.update_groups();
     }
-    
+
     //gets width of tile
     myScene.get_tile_w = function() {
         return tile_w;
     }
-    
+
     //gets height of tile
     myScene.get_tile_h = function() {
         return tile_h;
     }
-    
+
     //gets the tile at the mouse position
     myScene.get_tile_at = function ( x,y ){
         for (i in map) {
@@ -552,16 +554,16 @@ function Grid( bg_color, bg_image, map_matrix, tile_dict,
         }
         return null;
     }
-    
+
     //returns if a point is in a sprite
     myScene.point_collide = function ( spr, x, y ){
-        
+
         //vars
         var l = spr.x-spr.width/2;  //left
         var t = spr.y-spr.height/2; //top
         var r = spr.x+spr.width/2;  //right
         var b = spr.y+spr.height/2; //bottom
-        
+
         //check
         if ( x > l &&
              x < r &&
@@ -572,14 +574,14 @@ function Grid( bg_color, bg_image, map_matrix, tile_dict,
         }
         return false;
     }
-    
+
     //set top-left pixel position of bg-img
     myScene.set_topleft = function( l, t ) {
         cx = l + bg_img.width/2;
         cy = t + bg_img.height/2;
         bg_img.setPosition( cx,cy );
     }
-    
+
     myScene.set_top = function( y ) {
         //offset
         var dify = y - (bg_img.y-bg_img.height/2); //*down is positive diff
@@ -604,7 +606,7 @@ function Grid( bg_color, bg_image, map_matrix, tile_dict,
             projectiles[p].y += dify;
         }
     }
-    
+
     myScene.set_bottom = function( y ) {
         //offset
         var dify = y - (bg_img.y+bg_img.height/2); //*down is positive diff
@@ -628,9 +630,9 @@ function Grid( bg_color, bg_image, map_matrix, tile_dict,
         for (p in projectiles){
             projectiles[p].y += dify;
         }
-        
+
     }
-    
+
     myScene.set_left = function( x ) {
         //offset
         var difx = x - (bg_img.x-bg_img.width/2); //*right is positive diff
@@ -655,7 +657,7 @@ function Grid( bg_color, bg_image, map_matrix, tile_dict,
             projectiles[p].x += difx;
         }
     }
-    
+
     myScene.set_right = function( x ) {
         //offset
         var difx = x - (bg_img.x+bg_img.width/2); //*right is positive diff
@@ -680,14 +682,14 @@ function Grid( bg_color, bg_image, map_matrix, tile_dict,
             projectiles[p].x += difx;
         }
     }
-    
+
     //return topleft position
     myScene.get_topleft = function () {
         var l = bg_img.x - bg_img.width/2;
         var t = bg_img.y - bg_img.height/2;
         return [l,t];
     }
-    
+
     //init BG image position to 0,0
     myScene.set_topleft( 0,0 );
     //pre-define bounds
@@ -701,11 +703,11 @@ function Grid( bg_color, bg_image, map_matrix, tile_dict,
         myScene.height-gap, // 6 - inner bottom
         gap,                // 7 - inner left
     ]
-    
+
     //moves the map and everything in it
     //towards a specific direction
     myScene.move_towards = function( deg, speed ) {
-        
+
         //background
         bg_img.setMoveAngle( deg );
         bg_img.setSpeed( speed );
@@ -731,23 +733,23 @@ function Grid( bg_color, bg_image, map_matrix, tile_dict,
             projectiles[e].setMoveAngle( deg );
             projectiles[e].setSpeed( speed );
         }
-        
+
     }
-    
+
     //check events *** NEEDS FIXiNG
     myScene.interract = function() {
-        
+
         //gather any useful numbers
         var mx = myScene.getMouseX();
         var my = myScene.getMouseY();
         var cx = myScene.width/2;
         var cy = myScene.height/2;
-        
+
         var l = bg_img.x-bg_img.width/2;  //left
         var t = bg_img.y-bg_img.height/2; //top
         var r = bg_img.x+bg_img.width/2;  //right
         var b = bg_img.y+bg_img.height/2; //bottom
-        
+
         //get angle from center of canvas and move the
         //BG opposite of that direction with speed 15
         //or reverse if edge hit (+tiles & elements)
@@ -756,8 +758,8 @@ function Grid( bg_color, bg_image, map_matrix, tile_dict,
         var rad = Math.atan2( cdy, cdx );
         var deg = rad * 180 / Math.PI;
         var deg = deg + 90;
-        
-        
+
+
         //if mouse x,y is within the boundary of the canvas
         //and a rectangle <gap> pixels into the canvas
         if (
@@ -771,17 +773,17 @@ function Grid( bg_color, bg_image, map_matrix, tile_dict,
              my>bounds[0] &&
              my<bounds[2])
            ) {
-            
+
             //MOVE
             myScene.move_towards( deg, -scroll_speed );
-        
+
         } else {
-            
+
             //STOP
             myScene.move_towards( 0, 0 );
-            
+
         }//end check bounds for mouse-map scroll
-        
+
         //if map is scrolling too far,
         //set position at edge
         //left
@@ -803,9 +805,9 @@ function Grid( bg_color, bg_image, map_matrix, tile_dict,
         if ( b<bounds[6] ) {
             myScene.set_bottom( bounds[6] );
         }
-        
+
     }//end func
-    
+
     //for debugging *** NEEDS AN UPDATE
     myScene.print = function () {
         var mapxpos = bg_img.x-bg_img.width/2;
@@ -817,48 +819,48 @@ function Grid( bg_color, bg_image, map_matrix, tile_dict,
         console.log( "grid tiles: w) " + tiles_w + " y) " + tiles_h );
         console.log( "map position on canvas: " + mapxpos + ", " + mapypos );
     }
-    
+
     //get tile via its position
     myScene.get_tile = function( pos ) {
-        
+
         return map[pos[0]][pos[1]];
-        
+
     }
-    
+
     //visit tile and store in list
     myScene.visit = function( tile ) {
-        
+
         tile.visit();
         visited_tiles.push( tile );
-        
+
     }
-    
+
     //sets all visited tiles to not visited
     myScene.unvisit_all = function() {
-        
+
         for(i in visited_tiles){
             visited_tiles[i].unvisit();
         }
         visited_tiles = [];
-        
+
     }
-    
+
     //resets all tile's variables' to do with pathfinding
     myScene.rejuvinate_all = function() {
-        
+
         console.log("rejuvinating...");
-        
+
         for(i in map){
             for(j in map[i]){
                 map[i][j].clear_costs();
                 map[i][j].set_parent( null );
             }
         }
-        
+
         console.log("grid rejuvnated");
-        
+
     }
-    
+
     //unselects all units from grid
     myScene.unselect_all = function(){
         for(i in myScene.selected_units){
@@ -866,7 +868,7 @@ function Grid( bg_color, bg_image, map_matrix, tile_dict,
         }
         myScene.selected_units = [];
     }
-    
+
     //checks if any tile has a parent
     myScene.parents_exist = function() {
         for (t in map) {
@@ -878,35 +880,35 @@ function Grid( bg_color, bg_image, map_matrix, tile_dict,
         }
         return false;
     }
-    
+
     //gets distance between 2 tiles
     myScene.get_distance = function( a,b ) {
         var dx = a.get_xpos()-b.get_xpos();
         var dy = a.get_ypos()-b.get_ypos();
         return Math.sqrt(dx * dx + dy * dy);
     }
-    
+
     //true if (x1,y1) coordinate is in the given radius (of center x0,y0)
     myScene.in_radius = function( x0,y0,r0, x1,y1 ) {
-        
+
         var dx = x1-x0;
         var dy = y1-y0;
         var c = Math.sqrt((dx*dx) + (dy*dy));
         if (c > r0)
             return false;
         return true;
-        
+
     }
-    
+
     //get list of adjacent tiles (brute force)
     myScene.get_adj_tiles = function( tile, incl_diag=true) {
-        
+
         var x = tile.get_xpos();
         var y = tile.get_ypos();
         var incld = incl_diag;
         var adjs = [];
-        
-        
+
+
         //        /!\        \\
         //|\    WARNING    /|\\
         //|||||||||||||||||||\\
@@ -914,34 +916,34 @@ function Grid( bg_color, bg_image, map_matrix, tile_dict,
         //|||||||||||||||||||\\
         //|/     below     \|\\
         //        \!/        \\
-        
-        
+
+
         //brute force if statement
         // W edge
         if ( x == 0 ) {
-            
+
             // E tile
             adjs.push( map[x+1][y] );
-            
+
             // NW corner
             if ( y == 0 ) {
-                
+
                 adjs.push( map[x][y+1] );
                 if (incld) {
                     adjs.push( map[x+1][y+1] );
                 }
-            
+
             // SW corner
             } else if ( y == tiles_h-1 ) {
-                
+
                 adjs.push( map[x][y-1] );
                 if (incld) {
                     adjs.push( map[x+1][y-1] );
                 }
-               
+
             // W edge
             } else {
-                
+
                 adjs.push( map[x][y-1] );
                 adjs.push( map[x][y+1] );
                 if (incld) {
@@ -952,66 +954,66 @@ function Grid( bg_color, bg_image, map_matrix, tile_dict,
             }
         // E edge
         } else if ( x == tiles_w-1 ) {
-            
+
             // W tile
             adjs.push( map[x-1][y] );
-            
+
             // NE corner
             if ( y == 0 ) {
-                
+
                 adjs.push( map[x][y+1] );
                 if (incld) {
                     adjs.push( map[x-1][y+1] );
                 }
-            
+
             // SE corner
             } else if ( y == tiles_h-1 ) {
-                
+
                 adjs.push( map[x][y-1] );
                 if (incld) {
                     adjs.push( map[x-1][y-1] );
                 }
-               
+
             // E edge
             } else {
-                
+
                 adjs.push( map[x][y+1] );
                 adjs.push( map[x][y-1] );
                 if (incld) {
                     adjs.push( map[x-1][y+1] );
                     adjs.push( map[x-1][y-1] );
                 }
-                
+
             }
-        
+
         // between E,W edges
         } else {
-            
+
             // E, W tiles
             adjs.push( map[x+1][y] );
             adjs.push( map[x-1][y] );
-            
+
             // N edge
             if ( y == 0 ) {
-                
+
                 adjs.push( map[x][y+1] );
                 if (incld) {
                     adjs.push( map[x-1][y+1] );
                     adjs.push( map[x+1][y+1] );
                 }
-            
+
             // S edge
             } else if ( y == tiles_h-1 ) {
-                
+
                 adjs.push( map[x][y-1] );
                 if (incld) {
                     adjs.push( map[x-1][y-1] );
                     adjs.push( map[x+1][y-1] );
                 }
-               
+
             // between all edges
             } else {
-                
+
                 adjs.push( map[x][y+1] );
                 adjs.push( map[x][y-1] );
                 if (incld) {
@@ -1020,15 +1022,15 @@ function Grid( bg_color, bg_image, map_matrix, tile_dict,
                     adjs.push( map[x-1][y+1] );
                     adjs.push( map[x-1][y-1] );
                 }
-                
+
             }
-            
+
         }//end BRUTAL if statement
-        
-        return adjs;    
-        
+
+        return adjs;
+
     }//end func
-    
+
     //get nearest tile
     myScene.get_nearest_tile = function( tile,
                                          incl_diag=true,
@@ -1038,7 +1040,7 @@ function Grid( bg_color, bg_image, map_matrix, tile_dict,
         var incld = incl_diag;
         var inclb = incl_block;
         var inclo = incl_occup;
-        
+
         //vars
         var Q        = new Queue();
         var adjs     = [];
@@ -1046,7 +1048,7 @@ function Grid( bg_color, bg_image, map_matrix, tile_dict,
         var nearest  = null;
         var to_check = [];
         var cur_cost = 99999999;
-        
+
         //functions
         var get_adjs = function( t ) {
             return myScene.get_adj_tiles( t,incld );
@@ -1061,15 +1063,15 @@ function Grid( bg_color, bg_image, map_matrix, tile_dict,
             }
             return false;
         }
-        
+
         //log
         console.log("getting nearest tile from "+start.pos());
-        
+
         //init
         myScene.unvisit_all();
         myScene.visit(start);
         Q.in( start );
-        
+
         //get nearest tile
         while(!Q.is_empty()){
             while(!Q.is_empty()){
@@ -1097,37 +1099,37 @@ function Grid( bg_color, bg_image, map_matrix, tile_dict,
             to_check = [];
         }
         return nearest;
-        
+
     }//end func
-    
+
     //return object
     return myScene;
-    
+
 }
 
   ////////////////////////////////////////////
  ///   UNIT   ///////////////////////////////
 ////////////////////////////////////////////
 function Unit( scene, data, s_data, tile, t, hp=100 ) {
-    
+
     //init label
     var lbl_health = new Text(scene,"","12px Courier New",
                               "white" );
     lbl_health.width = 80;
-    
+
     //init
     mySprite = new Sprite( scene,data[0],data[1],data[2] );
     mySprite.setBoundAction( CONTINUE );
     mySprite.setSpeed( 0 );
-    
+
     //increment and set ID
     mySprite.id = ++Nickel.ID;
-    
+
     //public sprite of mySprite
     mySprite.selector = new Sprite( scene,s_data[0],s_data[1],s_data[2] );
     mySprite.selector.setBoundAction( CONTINUE );
     mySprite.selector.setSpeed( 0 );
-    
+
     //vars
     // - selection
     var selected = false;
@@ -1154,56 +1156,56 @@ function Unit( scene, data, s_data, tile, t, hp=100 ) {
     mySprite.armor = 1; //incoming damage multiplier
     // - other
     mySprite.point_worth = 0;
-    
-    
-    
+
+
+
     // sets points this unit is worth
     mySprite.set_worth = function( pts ) {
         this.point_worth = pts;
     }
-    
+
     // gets self's team
     mySprite.get_team = function () {
-        
+
         return this.team;
-        
+
     }
-    
+
     // sets self's team
     mySprite.set_team = function ( t ) {
-        
+
         this.team = t;
-        
+
     }
-    
+
     // gets self's state
     mySprite.get_state = function () {
-        
+
         return this.state;
-        
+
     }
-    
+
     // sets self's state
     mySprite.set_state = function ( s ) {
-        
+
         this.state = s;
-        
+
     }
-    
+
     // gets self's group state
     mySprite.get_group_state = function () {
-        
+
         return this.group_state;
-        
+
     }
-    
+
     // sets self's group state
     mySprite.set_group_state = function ( s ) {
-        
+
         this.group_state = s;
-        
+
     }
-    
+
     //places self at a tile's center
     mySprite.place_at_tile = function( tile ) {
         this.setPosition(tile.x,tile.y);
@@ -1212,50 +1214,50 @@ function Unit( scene, data, s_data, tile, t, hp=100 ) {
         tile.occupy();
         tile.set_team( this.team );
     }
-    
+
     //if unit is larger than 1 tile
     // - places uniat center of all tiles
     // - tiles MUST be in order! (NW to SE, left to right)
     // - type: 1=occupy, 2=block, else=none
     mySprite.place_at_tiles = function( tiles, type=1 ) {
-        
+
         //tmp vars
         var t = tiles;
         var cx = (t[t.length-1].x - t[0].x)/2 + t[0].x;
         var cy = (t[t.length-1].y - t[0].y)/2 + t[0].y;
-        
+
         //block or occupy or just set the team
         for(i in t){
             if(type==1){ [i].occupy(); }
             if(type==2){ [i].block(); }
             t[i].set_team(this.team);
         }
-        
+
         //place at center
         this.x = cx;
         this.y = cy;
     }
-    
+
     //init position
     mySprite.place_at_tile( mySprite.curr );
-    
+
     //
     //  Combat
     //
-    
-    // add weapon to self's weapon list 
+
+    // add weapon to self's weapon list
     mySprite.add_weapon = function( data, movement, radius=10, spread=0, rate=1, life=10, dmg=0, amt=1, thru=false, chance=100, speed_spread=0) {
-        
+
         alarm = new Timer();
         alarm.start();
         w = [ alarm,data,movement,radius,spread,rate,life,dmg,amt,thru,chance,speed_spread ];
         this.weapons.push( w );
-        
+
     }
-    
+
     // do any attacks if needed
     mySprite.update_combat = function() {
-        
+
         // Weapon Params by index:
         //   ~~~~
         //    0: alarm
@@ -1271,39 +1273,39 @@ function Unit( scene, data, s_data, tile, t, hp=100 ) {
         //   10: chance to fire
         //   11: speed spread
         //   ~~~~
-        
+
         // for each weapon
         for (var i in this.weapons) {
-            
+
             // rename
             var w = this.weapons[i];
 
             // check if elapsed time >= rate
             if (w[0].getElapsedTime() >= w[5]) {
-                
+
                 // reset alarm
                 w[0].reset();
-                
+
                 // find closest enemy in radius
                 var span = (this.scene.get_tile_w() + this.scene.get_tile_h()) / 2;
                 var radius_in_pixels = w[3] * span;
                 var target = this.find( radius_in_pixels );
-                
+
                 // only start attacking if there are enemies
                 if (target != null) {
-                    
+
                     // amt new projectiles using data,movement,dmg,life,thru
                     for (var j=0;j<w[8];j++) {
-                        
+
                         var r = Math.random()*100;
                         //console.log(r+"<===>"+w[10]);
                         if (r < w[10]) {
-                            
+
                             var mv_new = [];
                             mv_new[0] = w[2][0];
                             mv_new[1] = w[2][1];
                             mv_new[2] = w[2][2];
-                            
+
                             if (w[11]!=0) {
                                 //get a random spead within the speed spread
                                 var min = w[2][0] - w[11]/2;
@@ -1321,38 +1323,38 @@ function Unit( scene, data, s_data, tile, t, hp=100 ) {
 
                             //add projectile to update list
                             this.scene.add_projectile( p );
-                        
+
                         }
 
                     }
-                
+
                 }
-                
+
             }
 
         }
-        
+
         // health label
         lbl_health.set_text(this.health);
         lbl_health.setPosition( this.x,this.y+(this.height/2) );
-        
+
     }
-    
+
     // returns: - closest unit within radius on another team
     //          - null if none found
     //          - enemy units have priority over structures
     mySprite.find = function( radius ) {
-        
+
         // temp
         var tmp_u = null;
         var tmp_d = 9999999;
-        
+
         // get unit list
         var units = this.scene.get_units();
-        
+
         // loop thru all units
         for (var i in units) {
-            
+
             // rename
             var u = units[i];
 
@@ -1366,16 +1368,16 @@ function Unit( scene, data, s_data, tile, t, hp=100 ) {
                     // record
                     tmp_u = u;
                     tmp_d = d;
-                    
+
                 }
 
             }
 
         }
-        
+
         // look for structure if no unit found
         if (tmp_u == null) {
-            
+
             // get element list
             var elems = this.scene.get_elements();
 
@@ -1401,27 +1403,27 @@ function Unit( scene, data, s_data, tile, t, hp=100 ) {
                 }
 
             }
-            
+
         }
-        
+
         // return nearest
         return tmp_u;
-        
+
     }
-    
+
     //
     //  Movement
     //
-    
+
     mySprite.turn_to = function ( elem ) {
         // * Changes dir and orientation to turn
         //   towards the target sprite.
-        
+
         //vars
         var incline, turn;
         var ang;
         var dx, dy;
-        
+
         //determine shortest turn angle
         //incline = this.angleTo(tile);
         dx = this.x - elem.x;
@@ -1430,7 +1432,7 @@ function Unit( scene, data, s_data, tile, t, hp=100 ) {
         incline += 90;
         //degrees are offset
         turn = incline - this.rot;
-        
+
         if (turn > 180) {
             turn = 360 - turn;
             turn = -1  * turn;
@@ -1438,10 +1440,10 @@ function Unit( scene, data, s_data, tile, t, hp=100 ) {
         if (turn < -180) {
             turn = 360 + turn;
         }
-        
+
         //restrict from turning immediately, add to move angle
         ang = this.rot;
-        
+
         if (Math.abs(turn) > this.max_rot) {
             this.turned = false;
             if (turn>0){ ang+=this.max_rot; }
@@ -1454,64 +1456,64 @@ function Unit( scene, data, s_data, tile, t, hp=100 ) {
         } else {
             this.turned = true;
         }
-        
+
         //set rotation and direction seperately
         this.rot = ang;
         this.dir = ang+90;
-        
+
     }
-    
+
     mySprite.move = function ( vec ) {
         this.n_dx = vec[0];
         this.n_dy = vec[1];
     }
-    
+
     mySprite.stop = function () {
         this.n_dx = 0;
         this.n_dy = 0;
     }
-    
+
     mySprite.set_turn_rate = function (rate) {
         this.max_rot = rate;
     }
-    
+
     mySprite.get_vec = function () {
-        
+
         var rads = this.dir * Math.PI / 180;
         var vec = [];
-        
+
         vec[0] = Math.cos(rads) * this.energy;
         vec[1] = Math.sin(rads) * this.energy;
-        
+
         return vec;
     }
-    
+
     //
     //  Selection
     //
-    
+
     mySprite.select = function(){
         var len = mySprite.scene.selected_units.push(this);
         this.select_index = len-1;
         this.selector.show();
         selected = true;
     }
-    
+
     mySprite.unselect = function(){
         var sels = mySprite.scene.selected_units;
-        
+
         //Decrement all unit's select-indices in sels starting
         //from the unit after the clicked unit
         for(u=this.select_index+1; u<sels.length; u++){
             sels[ u ].select_index -= 1;
         }
-        
+
         sels.splice(this.select_index,1);
         this.select_index = -1;
         this.selector.hide();
         selected = false;
     }
-    
+
     //if you are using this version,
     //   make sure to handle the Grid's
     //   selecetd unit list properly
@@ -1520,21 +1522,21 @@ function Unit( scene, data, s_data, tile, t, hp=100 ) {
         this.selector.hide();
         selected = false;
     }
-    
+
     mySprite.is_selected = function(){
         return selected;
     }
-    
+
     //events
     mySprite.events = function(){
-        
+
         var click = mySprite.scene.mouse_up( this );
-        
+
         //select if clicked
         if (click==1){
-            
+
             console.log("unit clicked! : selection");
-            
+
             if (this.team == 1) {
                 if (!selected){
                     this.select();
@@ -1542,32 +1544,32 @@ function Unit( scene, data, s_data, tile, t, hp=100 ) {
                     this.unselect();
                 }
             }
-            
+
         } else if (click==3){
-            
+
             console.log("unit clicked! : action");
-            
+
         }
-        
+
     }
-    
+
     //
     //  Pathfinding
     //
-    
+
     // makes a unit go to a certain tile
     mySprite.go_to = function( tile ) {
-        
+
         if (this.curr != null) {
-            
+
             this.dest = tile;
             this.path = [];
             this.find_path( this.a_star );
-            
+
         }
-        
+
     }
-    
+
     // check if this has center in another sprite with offset t
     mySprite.center_in = function( elem, t=0 ){
         if (this.x >= elem.x - this.energy-t){
@@ -1581,23 +1583,23 @@ function Unit( scene, data, s_data, tile, t, hp=100 ) {
         }//end if past left
         return false;
     }
-    
+
     // update path using custom function/algorithm
     mySprite.find_path = function( algorithm ) {
-    
+
         //disregard if no path to be found
         if (this.dest == null){
             console.log("fip -> no destination");
             return;
         }
-        
+
         //error and disregard if no current tile
         if (this.curr == null){
             console.log("Problem Found: Unit at "+this.x+","+this.y+
                         " has no current tile. Path could not be found.");
             return;
         }
-        
+
         //update and disregard if path complete
         if ( this.curr.get_xpos() == this.dest.get_xpos() ) {
             if ( this.curr.get_ypos() == this.dest.get_ypos() ) {
@@ -1606,26 +1608,26 @@ function Unit( scene, data, s_data, tile, t, hp=100 ) {
                 return;
             }
         }
-        
+
         //recalculate new destination if unavailable
         if ( this.dest.is_blocked() || this.dest.is_occupied() ){
             //console.log("fip -> dest unavailable");
             this.dest = this.scene.get_nearest_tile(this.dest,true,false,false);
             //console.log("fip -> new destination calculated: " + this.dest.pos());
         }
-    
+
         //for clearity
         start_tile = this.curr;
         end_tile   = this.dest;
-    
+
         // Actions of "algorithm" function:
         // - update current unit's path list
         // - path list format:
         //   - [ next, next of next, ... end ]
         algorithm( start_tile,end_tile,this );
-    
+
     }
-    
+
     // check if any tile in list is blocked or occupied
     mySprite.is_clear = function( list ) {
         var dbg = [];
@@ -1638,20 +1640,20 @@ function Unit( scene, data, s_data, tile, t, hp=100 ) {
         if (dbg.length == 0) { return true; }
         return false;
     }
-    
+
     // move to next tile in path list
     mySprite.follow_path = function() {
-        
+
         //remove current tile from path
         if (this.path[0] == this.curr) {
             this.path.shift();
         }
-        
+
         // if dead or non-existent: disregard
         if (this.state == Nickel.DEAD || this.state == Nickel.DNE){
             return;
         }
-    
+
         // if path empty:
         // - if moving: stop
         else if (this.path.length == 0) {
@@ -1660,23 +1662,23 @@ function Unit( scene, data, s_data, tile, t, hp=100 ) {
                 this.state = Nickel.STOPPED;
             }
         }
-        
+
         // if path.len more than 0:
         // - if stopped: move
         //   - move if not reached
         else if (this.path.length > 0){
-            
+
             this.state = Nickel.STOPPED;
-            
+
             this.turn_to( this.path[0] );
-            
+
             if (this.turned) {
                 if(this.curr!=null){
                     this.curr.free();
                     this.curr = null;
                 }
                 this.state = Nickel.MOVING
-                
+
                 if (this.center_in( this.path[0] )) {
                     //snap to tile
                     this.x = this.path[0].x;
@@ -1702,22 +1704,22 @@ function Unit( scene, data, s_data, tile, t, hp=100 ) {
                     //stop
                     this.state = Nickel.STOPPED;
                     this.stop();
-                    
+
                 } else {
                     this.move( this.get_vec() );
                 }
-                
+
             }//end if turn complete
-            
+
         }// end if (is path)
-        
+
         //should not get here
         else {
             console.log("fp -> follow_path has crashed.");
         }
-    
+
     }
-    
+
     // checks if a tile exists in a list of tiles
     // complexity:  O(n)
     mySprite.tile_in = function ( list, t ) {
@@ -1728,7 +1730,7 @@ function Unit( scene, data, s_data, tile, t, hp=100 ) {
         }
         return false;
     }
-    
+
     // recursively creates a path
     mySprite.create_path = function ( t, u ) {
         if (t==null){
@@ -1743,21 +1745,21 @@ function Unit( scene, data, s_data, tile, t, hp=100 ) {
             u.create_path( par, u );
         }
     }
-    
+
     //the typical A* Pathfinding Algorithm
     // note: algorithm is dynamic
     // warning: EXTREMELY SUBOPTIMAL
     mySprite.a_star = function( a,b,u ) {
-        
+
         //console.log("");
         //console.log("A* : BEGIN");
-        
+
         //ABORT if dest is blocked/occupied
         if (b.is_blocked() || b.is_occupied()) {
             console.log("A* -> destination unavailable");
             return;
         }
-        
+
         //vars
         var me=u;
         var open=[];
@@ -1771,7 +1773,7 @@ function Unit( scene, data, s_data, tile, t, hp=100 ) {
         var h, g;
         var iters; // error handle
         var exists; // track if closed list's adjacents exists
-        
+
         //init
         myScene.rejuvinate_all();
         curr = a;
@@ -1782,13 +1784,13 @@ function Unit( scene, data, s_data, tile, t, hp=100 ) {
         curr.set_costs( g, h );
         iters = 0;
         exists = false;
-        
+
         //loop until path is found
         while ( true ) {
-            
+
             //counter
             iters++;
-        
+
             //get lowest F cost tile
             var tmp_cost = 9999999;
             for (var x in open) {
@@ -1805,108 +1807,108 @@ function Unit( scene, data, s_data, tile, t, hp=100 ) {
                         open.splice( ii, 1 );
             }
             close.push( curr );
-            
+
             //check if current is end tile
             if (curr.get_xpos() == end.get_xpos()){
                 if (curr.get_ypos() == end.get_ypos()){
                     break;
                 }
             }
-            
+
             //check if too many iters
             if (iters > 200) {
                 console.log("A* -> ERROR: ASTAR HAS TIMED-OUT");
                 break;
             }
-            
+
             //reset adjacent check
             exists = false;
-            
+
             //loop through closed tiles
             for (var y in close) {
-                
+
                 //loop through adjacent tiles
                 //  - include diagonals
                 //  - exclude blocked
                 //  - exclude occupied
                 //  - exclude closed
                 adjs = me.scene.get_adj_tiles( close[y], true );
-                
+
                 for (var yy in adjs) {
-                    
+
                     if ( !adjs[yy].is_blocked()  &&
                          !adjs[yy].is_occupied() &&
                          !me.tile_in(close, adjs[yy])
                        ) {
-                        
+
                         //indicate an adjacent exists
                         exists = true;
-                    
+
                         //prepare costs
                         g = close[y].get_g() + me.scene.get_distance( close[y], adjs[yy] );
                         h = me.scene.get_distance( end, adjs[yy] );
-                        
+
                         //if old > new, set
                         if (adjs[yy].get_g() > g) {
-                            
+
                             //set costs
                             adjs[yy].set_costs( g, h );
 
                             //set parent
                             adjs[yy].set_parent( close[y] );
-                            
+
                         }
 
                         //open the tile if not opened yet
                         if ( !me.tile_in(open, adjs[yy]) ) {
                             open.push( adjs[yy] );
                         }
-                        
+
                     }// else ignore
-                    
+
                 }// end thru adjacent tiles
-                
+
             }// end thru closed tiles
-            
+
             //abort if no adjacent tiles
             if (!exists) {
                 console.log("A* : ABORT");
                 //console.log("");
                 return;
             }
-            
+
         }// path found
-        
+
         //set path
         me.create_path( curr, me );
-        
+
         //console.log("A* : FINISH");
         //console.log("");
-        
+
     }//END A* Star Pathfinding Algorithm
-    
+
     //
     //  "Destructor"
     //
-    
+
     //removes references of self from everywhere
     mySprite.kill = function() {
-        
+
         //remove from update list
         this.scene.remove_unit( this );
-        
+
         //clear tile
         if (this.curr!=null)
             this.curr.clear_all();
-        
+
     }
-    
+
     //
     //  Update
     //
-    
+
     mySprite.update_master = function() {
-        
+
         this.events();
         this.update_combat();
         this.follow_path();
@@ -1923,18 +1925,18 @@ function Unit( scene, data, s_data, tile, t, hp=100 ) {
         if (this.health <= 0) {
             this.kill();
         }
-        
+
     }
-    
+
     return mySprite;
-    
+
 }
 
   ////////////////////////////////////////////
  ///   PROJECTILE   /////////////////////////
 ////////////////////////////////////////////
 function Projectile( scene, data, movement=[4,0,0], t=0, life=10, dmg=0, thru=false ) {
-    
+
     // - init
     mySprite = new Sprite( scene,data[0],data[1],data[2] );
     mySprite.setBoundAction( CONTINUE );
@@ -1957,24 +1959,24 @@ function Projectile( scene, data, movement=[4,0,0], t=0, life=10, dmg=0, thru=fa
     mySprite.health = 1;
     mySprite.destructive = false;
     mySprite.point_worth = 0;
-    
+
     // - start timer
     mySprite.timer.start();
-    
+
     // - increment and set ID
     mySprite.id = ++Nickel.ID;
-    
+
     // sets points this projectile is worth
     mySprite.set_worth = function( pts ) {
         this.point_worth = pts;
     }
-    
+
     //takes in x,y displacement
     mySprite.move = function ( vec ) {
         this.n_dx = vec[0];
         this.n_dy = vec[1];
     }
-    
+
     //stops displacing self
     mySprite.stop = function () {
         this.n_dx = 0;
@@ -1997,15 +1999,15 @@ function Projectile( scene, data, movement=[4,0,0], t=0, life=10, dmg=0, thru=fa
 
         return vec;
     }
-    
+
     // turns to sprite instantly or gradually
     mySprite.turn_to = function( elem, spread, instant=true ) {
-        
+
         //vars
         var incline, turn;
         var ang;
         var dx, dy;
-        
+
         //determine shortest turn angle
         dx = this.x - elem.x;
         dy = this.y - elem.y;
@@ -2013,7 +2015,7 @@ function Projectile( scene, data, movement=[4,0,0], t=0, life=10, dmg=0, thru=fa
         incline += 90;
         //degrees are offset
         turn = incline - this.rot;
-        
+
         if (turn > 180) {
             turn = 360 - turn;
             turn = -1  * turn;
@@ -2021,9 +2023,9 @@ function Projectile( scene, data, movement=[4,0,0], t=0, life=10, dmg=0, thru=fa
         if (turn < -180) {
             turn = 360 + turn;
         }
-        
+
         ang = this.rot;
-        
+
         //if instant, turn the full turn, spread applies
         if (instant) {
             ang += turn;
@@ -2037,7 +2039,7 @@ function Projectile( scene, data, movement=[4,0,0], t=0, life=10, dmg=0, thru=fa
             this.turned = true;
             return;
         }
-        
+
         //restrict from turning immediately
         if (Math.abs(turn) > this.max_rot) {
             this.turned = false;
@@ -2051,13 +2053,13 @@ function Projectile( scene, data, movement=[4,0,0], t=0, life=10, dmg=0, thru=fa
         } else {
             this.turned = true;
         }
-        
+
         //set rotation and direction seperately
         this.rot = ang;
         this.dir = ang+90;
-        
+
     }
-    
+
     // toggle if self will destroy other team's bullets
     mySprite.toggle_destruction = function() {
         if (this.destructive) {
@@ -2066,7 +2068,7 @@ function Projectile( scene, data, movement=[4,0,0], t=0, life=10, dmg=0, thru=fa
             this.destructive = true;
         }
     }
-    
+
     // to be overriden by user for additional events
     mySprite.on_enemy_hit = function( spr ) {
         // 5pts default for hitting an enemy
@@ -2080,11 +2082,11 @@ function Projectile( scene, data, movement=[4,0,0], t=0, life=10, dmg=0, thru=fa
             }
         }
     }
-    
+
     // damage a sprite who has a health variable
     //   and a team other than self's
     mySprite.damage_sprite = function( spr ) {
-        
+
         if ( spr.health != undefined ) {
             if ( spr.team != this.team ) {
                 var dmg = Math.ceil( spr.armor * this.damage * 10 ) / 10;
@@ -2097,30 +2099,30 @@ function Projectile( scene, data, movement=[4,0,0], t=0, life=10, dmg=0, thru=fa
                 this.on_enemy_hit( spr );
             }
         }
-        
+
     }
-    
+
     //events associated with projectiles
     mySprite.events = function() {
-        
+
         var u = this.scene.get_units();
         var e = this.scene.get_elements();
         var p = this.scene.get_projectiles();
-        
+
         // for each unit
         for (var i in u) {
             if ( this.collidesWith(u[i]) ){
                 this.damage_sprite(u[i]);
             }
         }
-        
+
         // for each element
         for (var i in e) {
             if ( this.collidesWith(e[i]) ){
                 this.damage_sprite(e[i]);
             }
         }
-        
+
         // for each projectile if self is destructive
         if (this.destructive) {
             for (var i in p) {
@@ -2130,18 +2132,18 @@ function Projectile( scene, data, movement=[4,0,0], t=0, life=10, dmg=0, thru=fa
             }
         }
     }
-    
+
     //removes references of self from everywhere
     mySprite.kill = function() {
-        
+
         //remove from update list
         this.scene.remove_projectile( this );
-        
+
     }
-    
+
     // main update
     mySprite.update_master = function() {
-        
+
         this.events();
         this.setImgAngle( this.rot-90 );
         this.update();
@@ -2157,11 +2159,11 @@ function Projectile( scene, data, movement=[4,0,0], t=0, life=10, dmg=0, thru=fa
             et >= this.lifetime) {
             this.kill();
         }
-        
+
     }
-    
+
     return mySprite;
-    
+
 }
 
   ////////////////////////////////////////////
@@ -2176,7 +2178,7 @@ function Group( scene, team=1, coords=[0,0], cap=1, max_wait=1, call_interval=1 
      *  Checks & removes null(dead) units from group *** NOT YET IMPLEMENTED
      *  WARNING: May Cause Memory Leak After Some Time! (not verified)
      */
-    
+
     //vars
     this.scene = scene;
     this.team = team;
@@ -2188,99 +2190,99 @@ function Group( scene, team=1, coords=[0,0], cap=1, max_wait=1, call_interval=1 
     this.squads = [];   // 2d array
     this.waiting = new Queue();
     this.alarm = new Timer();
-    
+
     //increment and set ID
     this.id = ++Nickel.ID;
-    
+
     //begin timer
     this.alarm.start();
-    
+
     //assigns this group to a tile
     this.set_tile = function( x,y ) {
         this.tile = this.scene.get_tile([x,y]);
     }
-    
+
     //sets the maximum # of squad units
     this.set_squad_capacity = function( n ) {
         this.cap = n;
     }
-    
+
     //sets the maximum # of waiting units
     this.set_wait_capacity = function( n ) {
         this.max_wait = n;
     }
-    
+
     //adds a target
     this.add_target = function( t ) {
         this.targets.push(t);
     }
-    
+
     //adds a target at a tile location
     this.add_target_at = function( x,y ) {
         this.targets.push( this.scene.get_tile([x,y]) );
     }
-    
+
     //clears all targets
     this.clear_targets = function( t ) {
         this.targets = [];
     }
-    
+
     //get a random target from targets
     this.get_target = function() {
-        
+
         var max = this.targets.length;
         var rnd = Math.floor(Math.random() * (max - 1));
         return  this.targets[rnd];
-        
+
     }
-    
+
     //checks if a unit is ready for recruitment
     this.is_ready = function( unit ) {
-        
+
         //check if same team
         if ( unit.get_team() != this.team ) {
-            
+
             return false;
-            
+
         }
-        
+
         //check if not stopped
         if ( unit.get_state() != Nickel.STOPPED ) {
-            
+
             return false;
-            
+
         }
-        
+
         //check if waiting
         if ( unit.get_group_state() == Nickel.RECRUITED ) {
-            
+
             return false;
-            
+
         }
-        
+
         //check if in a squad
         if ( unit.get_group_state() == Nickel.DEPLOYED ) {
-            
+
             return false;
-            
+
         }
-        
+
         //else, it must be ready
         return true;
-        
+
     }
-    
+
     //deploys 'cap' number of waiting units
     this.deploy = function() {
-        
+
         //check queue
         if (this.waiting.count() >= this.cap ) {
-            
+
             //make squad
             var squad = [];
             //deploy 'cap' number of waiting units
             for (var i=0;i<this.cap;i++) {
-                
+
                 //unit stops waiting
                 var unit = this.waiting.out();
                 //deploy unit
@@ -2289,24 +2291,24 @@ function Group( scene, team=1, coords=[0,0], cap=1, max_wait=1, call_interval=1 
                 unit.set_group_state( Nickel.DEPLOYED );
                 //add unit squad
                 squad.push( unit );
-                
+
             }
             //add squad
             this.squads.push( squad );
-            
+
         }
-        
+
     }
-    
+
     //periodically recruits an on-team unit who is not in a squad or is waiting
     this.recruit = function() {
-        
+
         //check interval
         if (this.alarm.getTimeElapsed() >= this.interval) {
-            
+
             //if there is room for more recruits
             if (this.waiting.count() < this.max_wait) {
-            
+
                 //get all units
                 var units = this.scene.get_units();
                 //recruit one unit
@@ -2314,7 +2316,7 @@ function Group( scene, team=1, coords=[0,0], cap=1, max_wait=1, call_interval=1 
 
                     //check if unit ready
                     if ( this.is_ready(units[i]) ) {
-                        
+
                         //recruit unit
                         units[i].go_to( this.tile );
                         //update group state
@@ -2329,13 +2331,13 @@ function Group( scene, team=1, coords=[0,0], cap=1, max_wait=1, call_interval=1 
                     }
 
                 }
-                
+
             }
-            
+
         }
-        
+
     }
-    
+
     //main update
     this.update_master = function() {
         this.recruit();
@@ -2348,83 +2350,83 @@ function Group( scene, team=1, coords=[0,0], cap=1, max_wait=1, call_interval=1 
  ///   MENU   ///////////////////////////////
 ////////////////////////////////////////////
 function Menu( scene,pic,w,h,is_events ) {
-    
+
     //vars
     var eventful = is_events;
     var active = false;
-    
+
     //init
     mySprite = new Sprite( scene,pic,w,h );
     mySprite.setBoundAction( CONTINUE );
     mySprite.setSpeed( 0 );
-    
+
     //increment and set ID
     mySprite.id = ++Nickel.ID;
-    
+
     //activate menu object
     mySprite.activate = function() {
         active = true;
     }
-    
+
     //deactivate menu object
     mySprite.deactivate = function() {
         active = false;
     }
-    
+
     //am I active?
     mySprite.is_active = function() {
         return active;
     }
-    
+
     //set topleft of menu
     mySprite.set_topleft = function( l, t ) {
         var cx = l + this.width/2;
         var cy = t + this.height/2;
         this.setPosition( cx,cy );
     }
-    
+
     //return topleft position
     mySprite.get_topleft = function () {
         var l = this.x - this.width/2;
         var t = this.y - this.height/2;
         return [l,t];
     }
-    
+
     //events meant to be overwritten
     mySprite.events = function() {
         //...
     }
-    
+
     //check events
     mySprite.interract = function() {
-        
+
         //if menu item has events
         if (eventful) {
             this.events();
         }
-        
+
     }
-    
+
     //master update function
     mySprite.update_master = function() {
         this.update();
         this.interract();
     }
-    
+
     mySprite.print = function(){
         console.log( "x,y pos: " + mySprite.get_topleft() );
     }
-    
+
     //return
     return mySprite;
-    
+
 }
 
   ////////////////////////////////////////////
  ///   TEXT   ///////////////////////////////
 ////////////////////////////////////////////
 function Text( scene,txt,fnt,clr ) {
-    
+
     //init
     mySprite = new Sprite( scene,Nickel.NOTHING,8,8 );
     mySprite.setBoundAction( CONTINUE );
@@ -2435,35 +2437,35 @@ function Text( scene,txt,fnt,clr ) {
     var text;
     var h_align = "center";
     var v_align = "middle";
-    
+
     //increment and set ID
     mySprite.id = ++Nickel.ID;
-    
+
     //sets the text (string,font,color)
     mySprite.set_text = function( str ) {
         text = str;
     }
-    
+
     //sets the alignment relative to the horizontal text position
     mySprite.set_h_align = function( align ) {
         h_align = align;
     }
-    
+
     //sets the alignment relative to the vertical text position
     mySprite.set_v_align = function( align ) {
         v_align = align;
     }
-    
+
     //sets properties of text
     mySprite.set_properties = function( f,c ) {
         font = f;
         color = c;
     }
-    
+
     // - init text
     mySprite.set_text(txt);
     mySprite.set_properties(fnt,clr);
-    
+
     //draws the text
     mySprite.show_text = function() {
         this.context.font = font;
@@ -2472,7 +2474,7 @@ function Text( scene,txt,fnt,clr ) {
         this.context.textBasline = v_align;
         this.context.fillText(text, this.x, this.y, this.width);
     }
-    
+
     //main update
     mySprite.update_master = function() {
         this.update();
@@ -2480,10 +2482,10 @@ function Text( scene,txt,fnt,clr ) {
             this.show_text();
         }
     }
-    
+
     //return text object
     return mySprite;
-    
+
 }
 
 /*
@@ -2496,40 +2498,40 @@ function Text( scene,txt,fnt,clr ) {
  /////   QUEUE   ////////////////////////////
 ////////////////////////////////////////////
 function Queue() {
-    
+
     this.list = [];
-    
+
     this.in = function( obj ) {
         this.list.push(obj);
     }
-    
+
     this.next = function() {
         return this.list[this.list.length-1];
     }
-    
+
     this.out = function() {
         return this.list.shift();
     }
-    
+
     this.is_empty = function() {
         return !this.list.length;
     }
-    
+
     this.count = function() {
         return this.list.length;
     }
-    
+
     this.clear = function(){
         this.list = [];
     }
-    
+
 }
 
   ////////////////////////////////////////////
  /////   HEAP   /////////////////////////////
 ////////////////////////////////////////////
 function Heap() {
-    
+
     //...not implemented yet
-    
+
 }

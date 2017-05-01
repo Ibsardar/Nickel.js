@@ -8,25 +8,25 @@
 <html lang="en-US">
 
 <head>
-   
+
     <meta charset="UTF-8">
-    
+
     <title>Testing Grounds *2*</title>
-    
+
     <script type="text/javascript"
             src = "simpleGame.js">
     </script>
-    
+
     <script type="text/javascript"
             src = "Nickel.js">
     </script>
-    
+
     <!-- removes favicon.ico error -->
     <link rel="shortcut icon" href="">
-    
+
     <!--   MAIN LOGIC   -->
     <script type="text/javascript">
-        
+
         //  CONSTANTS
         // Unit Data [pic,w,h]
         SHOOTER1_DATA = ["as_pics/ArmyMinion01.png", 30, 42];
@@ -49,26 +49,26 @@
         CIRCLE_50x50_DATA = ["as_pics/circle01_50x50.png", 50, 50];
         function GET_RND_CREEP_DATA() {
             var lst = ["as_pics/Minion01.png","as_pics/Minion02.png","as_pics/Minion03.png"];
-            var rnd = Math.floor(Math.random() * (3 - 1)); 
+            var rnd = Math.floor(Math.random() * (3 - 1));
             return [ lst[rnd],20,20 ];
         }
-        
-        
+
+
           ////////////////////////////////////////////
          ///  CREATOR  //////////////////////////////
         ////////////////////////////////////////////
-        // 
+        //
         // Desc      :   used by Grid. Creates something if clicked
         //               is a structure so it blocks its occupied tiles
         //
         //////////////////////////////////////////////
         function Creator( scene,data,occupied_tiles,t=0,hp=100,int=5 ) {
-            
+
             //init label
             var lbl_health = new Text(scene,"","16px Courier New",
                                       "white" );
             lbl_health.width = 100;
-            
+
             //vars
             var item = new Menu( scene,data[0],data[1],data[2],true );
             item.team = t;
@@ -102,45 +102,45 @@
                 "ogre"    : [ 800, 250, 800 ],
                 "wall"    : [ 2500, 0, 120 ]
             }
-            
+
             //gets an attribute of a unit
             item.get_stat = function( unit, attr ) {
-                
+
                 var index=0;
-                
+
                 if (attr == "health") {index=0;}
                 if (attr == "attack") {index=1;}
                 if (attr == "cost")   {index=2;}
-                
+
                 return item.unit_stats[unit][index];
-                
+
             }
-            
+
             //returns currently held resources by team n
             item.get_resources = function() {
                 return this.scene.get_resources(this.team);
             }
-            
+
             //adds resources to team n
             item.add_resources = function( res ) {
                 this.scene.add_resources( res, this.team );
             }
-            
+
             //subtracts resources to team n
             item.subtract_resources = function( res ) {
                 this.scene.add_resources( -1 * res, this.team );
             }
-            
+
             // sets points this creator is worth
             item.set_worth = function( pts ) {
                 this.point_worth = pts;
             }
-            
+
             // sets the time interval of auto unit creation
             item.set_interval = function( int ) {
                 this.interval = int;
             }
-            
+
             //convert coordinate pairs to tiles
             item.convert_to_tiles = function( pairs ) {
                 var list = [];
@@ -148,17 +148,17 @@
                     var tile = this.scene.get_tile(pairs[i]);
                     list.push( tile );
                 }
-                
+
                 return list;
             }
-            
+
             // returns avg center of all tiles self is blocking
             item.get_center = function() {
                 //temp vars
                 var cx = 0;
                 var cy = 0;
                 var t = this.tiles;
-                
+
                 //multiple tiles
                 if (t.length > 1){
                     cx = (t[t.length-1].x - t[0].x)/2 + t[0].x;
@@ -170,14 +170,14 @@
                 }
                 return [cx,cy];
             }
-            
+
             item.update_gather = function() {
                 if (this.gather_timer.getElapsedTime() > this.gather_interval) {
                     this.gather_timer.reset();
                     this.add_resources(this.gather_amt);
                 }
             }
-            
+
             //main update function (called by user)
             item.update_master = function(){
                 item.update();
@@ -188,7 +188,7 @@
                 lbl_health.setPosition( this.x,this.y+(this.height/2) );
                 lbl_health.update_master();
             }
-            
+
             //block the tiles that self is using
             item.set_tiles = function( ts ) {
                 for(i in ts){
@@ -196,7 +196,7 @@
                     ts[i].set_team(this.team);
                 }
             }
-            
+
             //place self on the center of multiple tiles and block them
             //tiles MUST be in order! (NW to SE, left to right)
             //MUST have at least 1 tile!
@@ -210,44 +210,44 @@
                 this.x = cx;
                 this.y = cy;
             }
-            
+
             //create a unit nearby
             item.create = function ( code, tile ) {
-                
+
                 // Weapon Params:
                 // \-> DATA list (w,h,img), MOVEMENT list (spd,acc,max_rot), radius_tiles, spread, rate_sec, life_sec, dmg, amt, thru?, chance, spd_spread
-                
-                
-                
+
+
+
                 if (code == "wall") {
                     // create wall unit
                     var wall = new Unit( scene, WALL_DATA, CIRCLE_50x50_DATA, tile, this.team, 2500 );
                     wall.energy = 3;
-                    
+
                     wall.set_worth( 120 );
                     this.scene.add_unit( wall );
                 }
-                
+
                 if (code == "ogre") {
                     // create ogre unit
                     var ogre = new Unit( scene, SHOOTER5_DATA, CIRCLE_50x50_DATA, tile, this.team, 800 );
                     ogre.energy = 4;
-                    
+
                     //mega bullet
                     var MOVEMENT = [2,0,0];
                     ogre.add_weapon( BULLET9_DATA, MOVEMENT, 18, 10, 10, 60, 225, 1 );
-                    
+
                     var MOVEMENT = [8,0,0];
                     ogre.add_weapon( BULLET4_DATA, MOVEMENT, 5.5, 20, 1, 2, 15, 3 );
-                    
+
                     ogre.set_worth( 800 );
                     this.scene.add_unit( ogre );
                 }
-                
+
                 if (code == "boss") {
                     // create boss unit
                     var boss = new Unit( scene, SHOOTER4_DATA, CIRCLE_50x50_DATA, tile, this.team, 250 );
-                    
+
                     // missile
                     var MOVEMENT = [3,0.05,0];
                     boss.add_weapon( BULLET5_DATA, MOVEMENT, 30, 40, 6, 12, 100, 1 );
@@ -257,65 +257,65 @@
                     // flames
                     MOVEMENT = [11,-0.5,0];
                     boss.add_weapon( BULLET7_DATA, MOVEMENT, 3, 90, 0.25, 2, 2.5, 30, false, 50, 6 );
-                    
+
                     boss.set_worth( 600 );
                     this.scene.add_unit( boss );
                 }
-                
+
                 if (code == "shooter") {
                     // create shooter unit
                     var shooter = new Unit( scene, SHOOTER1_DATA, CIRCLE_50x50_DATA, tile, this.team, 25 );
-                    
+
                     var MOVEMENT = [14,0,0];
                     shooter.add_weapon( BULLET1_DATA, MOVEMENT, 7, 10, 2, 3, 20, 1 );
-                    
+
                     shooter.set_worth( 90 );
                     this.scene.add_unit( shooter );
                 }
-                
+
                 if (code == "gasser") {
                     // create gasser unit
                     var gasser = new Unit( scene, SHOOTER2_DATA, CIRCLE_50x50_DATA, tile, this.team, 100 );
-                    
+
                     var MOVEMENT = [10,-0.65,0];
                     gasser.add_weapon( BULLET4_DATA, MOVEMENT, 3.5, 90, 0.25, 2, 0.35, 20, false, 50, 6 );
-                    
+
                     gasser.set_worth( 120 );
                     this.scene.add_unit( gasser );
                 }
-                
+
                 if (code == "icer") {
                     // create icer unit
                     var icer = new Unit( scene, SHOOTER3_DATA, CIRCLE_50x50_DATA, tile, this.team, 60 );
-                    
+
                     var MOVEMENT = [2.5,-0.017,0];
                     icer.add_weapon( BULLET3_DATA, MOVEMENT, 4, 20, 0.35, 8, 3, 1 );
-                    
+
                     icer.set_worth( 40 );
                     this.scene.add_unit( icer );
                 }
-                
+
                 if (code == "creep") {
                     // create creep unit
                     var creep = new Unit( scene, GET_RND_CREEP_DATA(), CIRCLE_50x50_DATA, tile, this.team, 15 );
-                    
+
                     var MOVEMENT = [10,-1,0];
                     creep.add_weapon( BULLET8_DATA, MOVEMENT, 2.5, 360, 0.5, 1, 5, 20, false, 50, 6 );
-                    
+
                     creep.set_worth( 10 );
                     this.scene.add_unit( creep );
                 }
-                
+
             }//end create
-            
+
             //makes this factory choose an output option
             item.choose = function( str_code ) {
                 this.choice = str_code;
             }
-            
+
             //overwrite events from Menu
             item.events = function() {
-                
+
                 //
                 // for team 1
                 //
@@ -324,21 +324,21 @@
                     if (this.scene.mouse_up( item )==1) {
 
                         console.log("factory clicked! : selection");
-                        
+
                         //cancel if no choice
                         if (this.choice == "") {
                             return;
                         }
-                        
+
                         //get cost, resources
                         var cost = this.get_stat(this.choice,"cost");
                         var res  = this.get_resources();
-                        
+
                         //cancel if not enough resources
                         if ( cost > res ) {
                             return;
                         }
-                        
+
                         //else, charge factory's resources
                         this.subtract_resources( cost );
 
@@ -355,28 +355,28 @@
                                                                    include_diagonals,
                                                                    include_blocked,
                                                                    include_occupied );
-                        
+
                         // now create at selected tile
                         this.create( this.choice,nearest );
 
                     }
                 }//end events for team 1
-                
+
                 //
                 // for team 2 (enemy)
                 //
                 if (this.team == 2) {
-                    
+
                     var chance = 7;
                     var chance2 = 0;
-                    
+
                     //check if 2 minutes have passed
                     if (this.get_resources() >= 240) {
                         //make enemy harder
                         chance = 5;
                         chance2 = 2;
                     }
-                    
+
                     //check if 4 minutes have passed
                     if (this.get_resources() >= 480) {
                         //make enemy harder
@@ -391,15 +391,15 @@
                             this.hardmode = true;
                         }
                     }
-                    
+
                     //check production timer
                     if (this.timer.getTimeElapsed() >= this.interval) {
-                        
+
                         console.log("enemy factory produced!");
 
                         //start from 1st tile within creator object
                         var tile = this.tiles[0];
-                        
+
                         // choose unit randomly
                         // gasser -> 30% chance (default)
                         // creep  -> 70% chance (default)
@@ -409,7 +409,7 @@
                         } else {
                             this.choice = "creep";
                         }
-                        
+
                         //boss chance
                         rnd = Math.floor(Math.random() * (20 - 1));
                         if (rnd < chance2) {
@@ -427,38 +427,38 @@
                                                                    include_blocked,
                                                                    include_occupied );
 
-                        
+
                         // now create at selected tile
                         this.create( this.choice,nearest );
-                        
+
                         //reset timer
                         this.timer.reset();
-                        
+
                     }
-                    
+
                 }//end enemy events
-                
+
             }
-            
+
             //init
             item.tiles = item.convert_to_tiles(item.coords);
             item.center = item.get_center();
             item.place_on_tiles( item.tiles );
-            
+
             //return
             return item;
-            
+
         }//end Creator
-        
+
         // generates a map using the Voronoi algorithm
         // dimensions by tile:  w,h
         // # of center points:  points
         // available tile #s:   min,max
         function Voronoi( w,h,pw,ph,points,min,max ) {
-            
+
             var map = [];
             var ctrs = [];
-            
+
             //generate random center points
             for (var i=0;i<points;i++) {
                 var x = Math.floor(Math.random() * (pw - 1)); // x pos
@@ -466,7 +466,7 @@
                 var z = Math.floor(Math.random() * (max - min +1)) + min; // tile number
                 ctrs.push( [ x,y,z ] );
             }
-            
+
             //generate map using center points
             //loop thru width
             //tmp vars
@@ -493,94 +493,95 @@
                     // Push tile # from nearest
                     //  center pt into map.
                     submap.push( tmpp[2] );
-                } 
+                }
             }
-            
+
             return map;
-            
+
         }
-        
-        
+
+
 
         function init(){
-            
+
             //map is 30x30 tiles
-            my_map = Voronoi(30,30,1500,1500,20,1,5);
+            my_map = Voronoi(30,30,1500,1500,20,1,6);
             //each tile is 50x50
             game = new Grid( "black",
                              "test2_map.png",
                              my_map,
                              { 0 : "nothing.png",
-                               1 : "as_pics/bluelava2.png",
-                               2 : "tile_tree.png",
-                               3 : "as_pics/metal.png",
-                               4 : "as_pics/rocks.png",
-                               5 : "as_pics/tree2.png" },
+                               1 : "as_pics/grass001.png",
+                               2 : "as_pics/grass002.png",
+                               3 : "as_pics/grass003.png",
+                               4 : "as_pics/grass004.png",
+                               5 : "as_pics/grass005.png",
+                               6 : "as_pics/grass006.png" },
                              0, 0,
                              50, 50,
                              30, 30,
                              1300, 650,
                              [ 1500, 1500 ]
                            );
-            
+
             // T=E=A=M >
             // == 1 == > Player
-            
+
             // T=E=A=M >
             // == 2 == > Enemy
-            
+
             //FACTORY
             fac_tiles = [ [1,1], [1,2], [1,3],
                           [2,1], [2,2], [2,3] ];
             fac_tiles_2 = [ [17,8], [17,9], [17,10],
                             [18,8], [18,9], [18,10] ];
-            
+
             var player_factory = new Creator( game,
                                           SHOOTER_FACTORY_DATA,
                                           fac_tiles,
                                           1,
                                           10000);
             game.add_element( player_factory );
-            
+
             var enemy_factory = new Creator( game,
                                          EVIL_FACTORY_DATA,
                                          fac_tiles_2,
                                          2,
                                          10000);
             game.add_element( enemy_factory );
-            
+
             //add factories as vars of game to make accessing easier
             game.my_factory = player_factory;
             game.ur_factory = enemy_factory;
-            
+
             //init player resources
             game.my_factory.add_resources( 250 );
             game.my_factory.gather_amt = 4;
-            
+
             //UI
-            
+
             //menu background
             ui_bg = new Menu( game, "ui_bg.png", 1300, 100, false );
             ui_bg.set_topleft( 0,550 );
-            
+
             //unit cost text
             ui_cost = new Text(game,"","14px Courier New","#000000");
             ui_cost.setPosition(97,615);
             ui_cost.width = 100;
             ui_cost.set_h_align("left");
-            
+
             //unit attack text
             ui_atk = new Text(game,"","14px Courier New","#000000");
             ui_atk.setPosition(97,595);
             ui_atk.width = 100;
             ui_atk.set_h_align("left");
-            
+
             //unit health text
             ui_health = new Text(game,"","14px Courier New","#000000");
             ui_health.setPosition(97,575);
             ui_health.width = 100;
             ui_health.set_h_align("left");
-            
+
             //player 1 resources text
             ui_res = new Text(game,"no resources","18px Tahoma","#3a2207");
             ui_res.setPosition(1250,590);
@@ -588,7 +589,7 @@
             ui_res2 = new Text(game,"Gold","20px Tahoma","#000000");
             ui_res2.setPosition(1250,570);
             ui_res2.width = 120;
-            
+
             //unit side profiles
             ui_profile1s = new Menu( game, "as_pics/ArmyMinion01.png", 30, 42, false );
             ui_profile1s.setPosition(50,590);
@@ -602,7 +603,7 @@
             ui_profile4s = new Menu( game, "as_pics/wall.png", 48, 48, false );
             ui_profile4s.setPosition(50,590);
             ui_profile4s.setImgAngle(135);
-            
+
             //menu button 1
             ui_button1 = new Menu( game, "ui_button.png", 126, 91, true );
             ui_button1.set_topleft( 244,554 );
@@ -634,7 +635,7 @@
                     ui_profile1s.hide();
                 }
             }
-                    
+
             //menu button 2
             ui_button2 = new Menu( game, "ui_button.png", 126, 91, true );
             ui_button2.set_topleft( 394,554 );
@@ -665,7 +666,7 @@
                     ui_profile2s.hide();
                 }
             }
-            
+
             //menu button 3
             ui_button3 = new Menu( game, "ui_button.png", 126, 91, true );
             ui_button3.set_topleft( 694,554 );
@@ -696,7 +697,7 @@
                     ui_profile3s.hide();
                 }
             }
-            
+
             //menu button 4
             ui_button4 = new Menu( game, "ui_button.png", 126, 91, true );
             ui_button4.set_topleft( 544,554 );
@@ -727,7 +728,7 @@
                     ui_profile4s.hide();
                 }
             }
-            
+
             //profile picture of units
             ui_profile1 = new Menu( game, "as_pics/ArmyMinion01.png", 30, 42, false );
             ui_profile1.setPosition(ui_button1.x,ui_button1.y);
@@ -737,31 +738,31 @@
             ui_profile3.setPosition(ui_button3.x,ui_button3.y);
             ui_profile4 = new Menu( game, "as_pics/wall.png", 48, 48, false );
             ui_profile4.setPosition(ui_button4.x,ui_button4.y);
-            
+
             //score text
             ui_score = new Text(game,"no score","18px Tahoma","#ffd19e");
             ui_score.setPosition(90,640);
             ui_score.width = 100;
-            
+
             //win text
             ui_victory = new Text(game,"Victory","72px Helvetica","#9de0be");
             ui_victory.setPosition(game.canvas.width/2,game.canvas.height/2 - 60);
             ui_victory.width = 290;
-            
+
             //lose text
             ui_defeat = new Text(game,"Defeat","72px Helvetica","#c68585");
             ui_defeat.setPosition(game.canvas.width/2,game.canvas.height/2 - 60);
             ui_defeat.width = 290;
-            
+
             //gameover score text
             ui_end_score = new Text(game,"","32px Tahoma","#825400");
             ui_end_score.setPosition(game.canvas.width/2,game.canvas.height/2);
             ui_end_score.width = 220;
-            
+
             //gameover board sprite
             ui_end_board = new Menu(game,"as_pics/lbl_box01.png",320,200,false);
             ui_end_board.setPosition(game.canvas.width/2,game.canvas.height/2 - 60);
-            
+
             //set map markers for enemy AI
             enemy_orders_1 = new Group(game,2,[8,10],6,6,30);
             enemy_orders_2 = new Group(game,2,[20,4],3,3,5);
@@ -769,18 +770,18 @@
             enemy_orders_2.add_target_at(4,2);
             game.add_group( enemy_orders_1 );
             game.add_group( enemy_orders_2 );
-            
+
             game.start();
-            
+
             //debug
             game.print();
-            
+
         } // end init
 
         function update(){
-            
-            
-            
+
+
+
             //check gameover
             if (game.my_factory.health <= 0) {
                 ui_end_board.update_master();
@@ -794,7 +795,7 @@
                 ui_end_score.update_master();
             // else, keep going
             } else {
-                
+
                 game.clear();
                 game.interract();
                 game.update();
@@ -821,15 +822,15 @@
                 ui_res.update_master();
                 //prepare for next iteration
                 game.prepare();
-                
+
             }
-            
-            
-            
+
+
+
         } // end update
-        
+
     </script>
-    
+
 </head>
 
 <body onload = "init()" style="background-color: #232323;">
