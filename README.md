@@ -6,7 +6,7 @@ An RTS game engine built over SimpleGame.js (by Andrew Harris). It is being writ
 
 ## Recent Updates/Issues
 
-Recently discovered a hovering/clicking bug on touchscreen laptops.
+Recently fixed hovering/clicking bug on touchscreen laptops.
 
 ---
 
